@@ -1,0 +1,1790 @@
+swagger: '2.0'
+info:
+  title: Nokia Motive Connected Device Platform API
+  description: CDP enables management of remote devices over various protocols. This API can be used to provision devices, get diagnostics from them and configure them.
+  version: 1.0.0
+basePath: /rest
+schemes:
+  - http
+  - https
+produces:
+  - application/json
+paths:
+  '/about':
+    get:
+      description: Returns information about version of the product, build date and IoT content date.
+      summary: Get information about product version, build date and IoT content date.
+      tags:
+        - About
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Gets the information about version and build date.
+          schema:
+            $ref: '#/definitions/About'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/selectioncriteria/{id}':
+    get:
+      summary:
+        Get the particular Selection Criteria.
+      description: |
+        Get one particular Selection Criteria, based on provided ID.
+      tags:
+        - SelectionCriteria
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/objectid'
+      responses:
+        '200':
+          description: Resources returned successfully
+          schema:
+            $ref: '#/definitions/CriteriaTemplate'
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal server error
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary:
+        Deletes the Selection Criteria
+      description: |
+        Removes the Selection Criteria, based on provided ID.
+      tags:
+        - SelectionCriteria
+      parameters:
+        - $ref: '#/parameters/objectid'
+      responses:
+        '200':
+          description: Deleted successfully
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal server error
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Primitive:
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+  SceDetailMeta:
+    properties:
+      key:
+        type: string
+        readOnly: true
+        description: 'Node value'
+      value:
+        type: string
+        readOnly: true
+        description: 'Cluster wide MD5 value'
+  ActionPrimitive:
+    properties:
+      json:
+        $ref: '#/definitions/Action'
+      xml:
+        type: string
+  SceMeta:
+    properties:
+      key:
+        type: string
+        readOnly: true
+        description: identifier of the SCE property
+      overridden:
+        type: boolean
+        readOnly: true
+        description: true if the SCE property contains a non-default value
+      fileUpload:
+        type: boolean
+        readOnly: true
+        description: 'true if this is a file-based property, false if it is a string-based property'
+      sensitive:
+        type: boolean
+        readOnly: true
+        description: 'true if this string-based property contains sensitive data. Sensitive data can not be read, only written'
+      textArea:
+        type: boolean
+        readOnly: true
+        description: true if this string-based property can span multiple lines
+      checkbox:
+        type: boolean
+        readOnly: true
+        description: true if this string-based property represents a boolean
+      tenantSpecific:
+        type: boolean
+        readOnly: true
+        description: true if this property is tenant specific
+      escaped:
+        type: boolean
+        readOnly: true
+        description: 'true if this string-based property needs to be escaped: TODO: GET RID OF THIS'
+      selectValues:
+        type: array
+        items:
+          type: string
+        readOnly: true
+        description: Enumeration of acceptable values
+      value:
+        type: string
+        readOnly: true
+        description: 'If this property is string-based, the value contains the current string-based value. If the property is file-based, the value contains the current filename'
+      fileUploadPassword:
+        type: boolean
+        readOnly: true
+        description: 'true if this file-based property contains encrypted content that needs to be decrypted using a password. Eg: PCSK10 format'
+    required:
+      - key
+  PersistentObject:
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Unique identifier
+      updatedOn:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Timestamp of last modification. Milliseconds since epoch
+      createdOn:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Timestamp of creation. Milliseconds since epoch
+  LicenseDetails:
+    properties:
+      licenseVersion:
+        type: string
+      licenseExpirationDate:
+        type: string
+      licenseNumberOfSubscribers:
+        type: integer
+        format: int64
+      licenseBasicCount:
+        type: integer
+        format: int64
+      licenseAdvancedCount:
+        type: integer
+        format: int64
+      allowedProtocols:
+        type: string
+      allowedFeatures:
+        type: string
+      hostIds:
+        type: string
+      licensedNumberOfESDevices:
+        type: integer
+        format: int64
+      licensedNumberOfRcsDevices:
+        type: integer
+        format: int64
+      licensedNumberOfTenants:
+        type: integer
+        format: int64
+      licensedTPS:
+        type: integer
+        format: int64
+      licenseNumberOfGatewayConnectedDevices:
+        type: integer
+        format: int64
+      deploymentType:
+        type: string
+  OperationalInfo:
+    properties:
+      hostId:
+        type: string
+      currentAdvancedSubscribers:
+        type: integer
+        format: int64
+      currentBasicSubsribers:
+        type: integer
+        format: int64
+      currentESDeviceCount:
+        type: integer
+        format: int64
+      currentRcsDeviceCount:
+        type: integer
+        format: int64
+      currentTenantCount:
+        type: integer
+        format: int64
+  About:
+    properties:
+      productName:
+        type: string
+        description: Full name of the product.
+      version:
+        type: string
+        description: Version of currently installed product.
+      buildDate:
+        type: integer
+        format: int64
+        description: Timestamp of build date. Milliseconds since epoch.
+      iotContentDate:
+        type: integer
+        format: int64
+        description: Timestamp of IoT content. Milliseconds since epoch.
+      loadedProtocol:
+        type: array
+        items:
+          type: string
+      licenseInfo:
+        $ref: '#/definitions/LicenseDetails'
+        description: Detailed license information.
+      operationalInfo:
+        $ref: '#/definitions/OperationalInfo'
+        description: Detailed operational inforamtion.
+  ListableDevice:
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Unique identifier
+      deviceId:
+        type: string
+      networkId:
+        type: string
+      subscriberId:
+        type: string
+      customerId:
+        type: string
+      oui:
+        type: string          
+        description: oui associated with  device 
+      productClass:
+        type: string
+        description: productClass associated with  device
+      model:
+        type: string
+      manufacturer:
+        type: string
+      managed:
+        type: boolean
+      inUse:
+        type: boolean
+      emailId:
+        type: string
+      protocolRealm:
+        type: array
+        items:
+          type: string
+
+  CriteriaList:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          id:
+            type: integer
+            format: int64
+          name:
+            type: string
+  CriteriaTemplate:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          id:
+            type: integer
+            format: int64
+          name:
+            type: string
+          description:
+            type: string
+          criteriaExpression:
+            type: string
+          criteriaParams:
+            type: array
+            items:
+              $ref: '#/definitions/CriteriaParam'
+  CriteriaParam:
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      nameKey:
+        type: string
+      required:
+        type: boolean
+      defaultValue:
+        type: string
+      hint:
+        type: string
+      type:
+        type: string
+      criteriaOptions:
+        type: array
+        items:
+          $ref: '#/definitions/CriteriaOption'
+  CriteriaOption:
+    properties:
+      value:
+        type: string
+  CriteriaParamArray:
+    properties:
+      default:
+        type: string
+    additionalProperties:
+      type: string
+  Device:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          deviceId:
+            type: string
+          networkId:
+            type: string
+          iccId:
+            type: string
+          subscriberId:
+            type: string
+          eid:
+            type: string
+          oui:
+            type: string          
+            description: oui associated with  device 
+          productClass:
+            type: string          
+            description: productClass associated with  device 
+          emailId:
+            type: string
+          jabberId:
+            type: string
+          routingId:
+            type: string
+          customerId:
+            type: string
+          managed:
+            type: boolean
+          inUse:
+            type: boolean
+          model:
+            type: string
+          manufacturer:
+            type: string
+          deviceToken:
+            type: string
+          pushToken:
+            type: string
+          logging:
+            type: boolean
+          firmwareVersion:
+            type: string
+          profileId:
+           type: string
+          parentDeviceId:
+           type: string
+          parentId:
+           type: integer
+           format: int64
+          protocolRealm:
+            type: array
+            items:
+              type: string
+          nativeClient:
+            $ref: '#/definitions/Client'
+          plcClient:
+            $ref: '#/definitions/Client'
+          customAttributes:
+            $ref: '#/definitions/CustomAttributes'
+          serviceTags:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceTag'
+          dynamicVariables:
+            type: array
+            items:
+              $ref: '#/definitions/DynamicVariable'
+          userTags:
+            type: array
+            items:
+              $ref: '#/definitions/UserTag'
+          hostDevice:
+            $ref: '#/definitions/HostDevice'    
+  UserTag:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+  DynamicVariable:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+      dontCopy:
+        type: boolean
+      resetOnCopy:
+        type: boolean
+      resetValue:
+        type: string
+      encrypt:
+        type: boolean
+  ServiceTag:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+      dontCopy:
+        type: boolean
+      resetOnCopy:
+        type: boolean
+      resetValue:
+        type: string
+  DeviceFault:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+          resourceUri:
+            type: string
+          resourceValue:
+            type: string
+          ceaseDate:
+            type: integer
+            format: int64
+            readOnly: true
+            description: Timestamp of queuing job. Milliseconds since epoch
+  FaultPolicyRequest:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          id:
+            type: integer
+            format: int64
+            readOnly: true
+          name:
+            type: string
+          filterCriteria:
+            $ref: '#/definitions/FilterCriteria'
+          resourceName:
+            type: string
+          enable:
+            type: boolean
+          reportingInterval:
+            type: integer
+            format: int64
+            readOnly: true
+          faultPolicyConditions:
+            type: array
+            items:
+              $ref: '#/definitions/FaultConditionParam'
+          faultClearCondition:
+            $ref: '#/definitions/FaultConditionParam'
+  FaultConditionParam:
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+      name:
+        type: string
+      category:
+        type: string
+        enum:
+          - CRITICAL
+          - MAJOR
+          - MINOR
+          - INFORMATIONAL
+      conditionValue:
+        type: string
+  FilterCriteria:
+    properties:
+      make:
+        type: string
+      model:
+        type: string
+      firmware:
+        type: string
+  JobResultDetail:
+    properties:
+      jobResultId:
+        type: integer
+        format: int64
+        readOnly: true
+      jobStatus:
+        type: string
+      jobSubStatus:
+        type: string
+      jobCorrelatorId:
+        type: string
+      jobName:
+        type: string
+      nativeClientTargeted:
+        type: boolean
+      primitiveRequest:
+        type: string
+      primitiveResponse:
+        type: string
+      errorMessage:
+        type: string
+      actionName:
+        type: string
+      primitiveName:
+        type: string
+      protocolPreference:
+        type: string
+      queuedTime:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Timestamp of queuing job. Milliseconds since epoch
+      expirationTimeOutSeconds:
+        type: integer
+        format: int64
+        description:  Operation time out
+      executionTimeOutSeconds:
+        type: integer
+        format: int64
+        description:  operation time out  after the device connects back
+  InvocationModel:
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Unique identifier
+      status:
+        type: string
+      subStatus:
+        type: string
+      faultString:
+        type: string
+      operation:
+        type: string
+      input:
+        type: string
+      output:
+        type: string
+      queuedTime:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Timestamp of queuing job. Milliseconds since epoch
+      startTime:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Timestamp of starting job. Milliseconds since epoch
+      endTime:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Timestamp of job finished. Milliseconds since epoch
+
+  JobModel:
+    allOf:
+      - $ref: '#/definitions/InvocationModel'
+      - properties:
+          jobId:
+            type: integer
+            format: int64
+            readOnly: true
+          djrId:
+            type: integer
+            format: int64
+            readOnly: true
+          djrlId:
+            type: integer
+            format: int64
+            readOnly: true
+          nbiCorrelator:
+            type: string
+          jobName:
+            type: string
+          actionName:
+            type: string
+          nativeClientTargeted:
+            type: boolean
+
+  EUICCAsyncOperation:
+    type: object
+    discriminator: operation
+    required:
+      - operation # required for inheritance to work
+    properties:
+      operation:
+        type: string
+
+  downloadProfile:
+    allOf:
+      - $ref: '#/definitions/EUICCAsyncOperation'
+      - properties:
+          iccid:
+            type: string 
+          profileType:
+            type: string
+          enableProfile:
+            type: boolean
+  deleteProfile:
+    allOf:
+      - $ref: '#/definitions/EUICCAsyncOperation'
+      - properties:
+          iccid:
+            type: string
+  enableProfile:
+    allOf:
+      - $ref: '#/definitions/EUICCAsyncOperation'
+      - properties:
+          iccid:
+            type: string
+  disableProfile:
+    allOf:
+      - $ref: '#/definitions/EUICCAsyncOperation'
+      - properties:
+          iccid:
+            type: string
+            
+  ApplicationCommandParam:
+    properties:
+      name:
+        type: string
+      operation:
+        type: string
+      version:
+        type: string
+  ApplicationList:
+    properties:
+      name:
+        type: string
+      version:
+        type: string
+      status:
+        type: string
+      operation:
+        type: string
+      identifier:
+        type: string
+      managed:
+        type: boolean
+      applicationState:
+        type: string
+        enum:
+            - APPROVED
+            - EXPIRED
+            - MANAGED
+
+  ApplicationMeta:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          name:
+            type: string
+          version:
+            type: string
+          description:
+            type: string
+          manufacturer:
+            type: string
+          model:
+            type: string
+          URL:
+            type: string
+          state:
+            type: string
+            enum:
+              - APPROVED
+              - EXPIRED
+              - MANAGED
+          properties:
+            type: object
+            additionalProperties:
+              type: string
+  DeviceLog:
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Unique identifier
+      logEntries:
+        type: array
+        items:
+          $ref: '#/definitions/CommunicationLogEntry'
+  CommunicationLogEntry:
+    properties:
+      direction:
+        type: boolean
+      source:
+        type: boolean
+      inserted:
+        type: string
+      jobid:
+        type: integer
+        format: int64
+      command:
+        type: string
+  PushChannels:
+    properties:
+      name:
+        type: string
+        description: channel name
+      state:
+        type: string
+        description: state of the push transport channel
+      reason:
+        type: string
+        description: reason for a state
+  Client:
+    properties:
+      bootstrap:
+        $ref: '#/definitions/Bootstrap'
+      credentials:
+        $ref: '#/definitions/ProtocolCredentials'
+      bootstrapped:
+        type: boolean
+      version:
+        type: string
+        description: The name of the client
+      lastSeen:
+        type: string
+        readOnly: true
+        description: "Device's last seen time by CDP, formatted in 'yyyy-MM-dd HH:mm:ss' format."
+      announcedMake:
+        type: string
+        readOnly: true
+        description: Make announced by this protocol. Can be used during device classification
+      announcedModel:
+        type: string
+        readOnly: true
+        description: Model announced by this protocol. Can be used during device classification
+      pushChannels:
+        type: array
+        items:
+          $ref: '#/definitions/PushChannels'
+  Bootstrap:
+    properties:
+      type:
+        description: >
+          If the protocol requires bootstrap, this setting controls how CDP will
+          bootstrap it. Not all bootstrap types are supported by all protocols.
+          - SI: Server Initiated: Server will generate credentials and send them
+          to the device
+          - FBU: Factory bootstrap with unique credentials: Server must be
+          configured with unique credentials
+          - FBD: Factory bootstrap with default credentials: Server will use
+          default credentials (configured at device type) the first time, and
+          change them with unique (generated) ones during first contact
+        type: string
+        enum:
+          - FBU
+          - FBD
+          - SI
+      state:
+        type: string
+        description: This field tells the bootstrap status of the device
+        enum:
+          - NOT_BOOTSTRAPPED
+          - BOOTSTRAPPED
+          - BOOTSTRAPPING
+        readOnly: true
+      error:
+        type: string
+        description: 'If the last bootstrap attempt failed, this field contains the details of the error'
+        readOnly: true
+  ProtocolCredentials:
+    properties:
+      serverPassword:
+        type: string
+      clientUsername:
+        type: string
+      clientPassword:
+        type: string
+  CustomAttributes:
+    properties:
+      attribute1:
+        type: string
+      attribute2:
+        type: integer
+        format: int64
+      attribute3:
+        type: string
+      attribute4:
+        type: integer
+        format: int64
+      attribute5:
+        type: string
+      attribute6:
+        type: integer
+        format: int64
+  Tenant:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          name:
+            type: string
+          description:
+            type: string
+          imsiRanges:
+            type: array
+            description: list of IMSI ranges that belong to this tenant. Auto-created devices that announce IMSI will be automatically assigned to this tenant if their IMSI starts with one of the the configured ranges.
+            items:
+              type: string
+  User:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          userName:
+            type: string
+          password:
+            type: string
+          tenant:
+            $ref: '#/definitions/Tenant'
+          enabled:
+            type: boolean
+          role:
+            type: integer
+            format: int64
+          roleName:
+            type: string
+  Role:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          name:
+            type: string
+          defaultRole:        
+            type: boolean
+          permissions:
+            type: array
+            items:
+              type: string
+  DevicesChart:
+    properties:
+      months:
+        type: array
+        items:
+          type: string
+      devicesCount:
+        type: array
+        items:
+          type: integer
+          format: int64
+          
+  DeviceProperty:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          autoCreate:
+            type: string
+          autoBootstrap:
+            type: string
+          clientName:
+            type: string
+          clientNonce:
+            type: string
+          clientPassword:
+            type: string
+          manufacturer:
+            type: string
+          model:
+            type: string
+          serverName:
+            type: string
+          serverNonce:
+            type: string
+          serverPassword:
+            type: string
+          cga:
+            type: string
+          bootstrapSecret:
+            type: string   
+  DevicePropertyList:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+  ProtocolDeviceTypeMeta:
+    properties:
+      name:
+        type: string
+      factoryBootstrapSupported:
+        type: boolean
+      siBootstrapSupported:
+        type: boolean
+      credentialsSupported:
+        type: boolean
+      bootstrapRequired:
+        type: boolean
+      alwaysInitiateConnection:
+        type: boolean
+      connectionRequestTypes:  
+        type: array
+        items:
+          type: string
+
+  JobResultsByStatus:
+    properties:
+      name:
+        type: string
+        description: job status.
+      data:
+        type: array
+        items:
+          type: integer
+          format: int64
+
+  JobsChart:
+    properties:
+      months:
+        type: array
+        items:
+          type: string
+      jobResultsByStatus:
+        type: array
+        items:
+          $ref: '#/definitions/JobResultsByStatus'
+
+  Dashboard:
+     properties:
+       devicecount:
+          type: integer
+          format: int64
+          readOnly: true
+          description: Number of  devices in the system. Superadmin has count for all devices. Tenant user has count only for it's own devices
+       tenantcount:
+          type: integer
+          format: int64
+          readOnly: true
+          description: Number of tenants in the system
+       usercount:
+          type: integer
+          format: int64
+          readOnly: true
+          description: Number of users in the system
+       deviceschart:
+          $ref: '#/definitions/DevicesChart'
+       jobschart:
+          $ref: '#/definitions/JobsChart'
+
+  Me:
+    properties:
+      name:
+        type: string
+      tenant:
+        type: integer
+        format: int64
+      licenseValid:
+        type: boolean
+      roles:
+        type: array
+        items:
+          type: string
+  FirmwareList:
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Unique identifier
+      name:
+        type: string
+      manufacturer:
+        type: string
+      model:
+        type: string
+      prerequisite:
+        type: string
+      version:
+        type: string
+      firmwareState:
+            description: state of the firmware Image
+            type: string
+            enum:
+              - RECEIVED
+              - UNDER_TEST
+              - VERIFIED
+              - APPROVED
+              - INACTIVE
+              - REJECTED
+              - EXPIRED             
+              - UNDER_TEST_SG
+      firmwareSeverity:
+            description: severity level
+            type: string
+            enum:
+              - NO_SEVERITY
+              - MANDATORY
+              - OPTIONAL
+  Firmware:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          name:
+            type: string
+          version:
+            type: string
+          imagefileurl:
+            type: string 
+          manufacturer:
+            type: string
+          model:
+            type: string
+          username:
+            description: username  to access the firmware image
+            type: string 
+          password:
+            description: password  to access the firmware image
+            type: string  
+          hostname:
+            description: host from where firmware was uploaded 
+            type: string  
+          severity:
+            description: severity level
+            type: string
+            enum:
+              - NO_SEVERITY
+              - MANDATORY
+              - OPTIONAL
+          prerequisite:
+            type: string
+          properties:
+            type: array
+            items:
+                  $ref: '#/definitions/FirmwareProperties'
+          state:
+            description: state of the firmware Image
+            type: string
+            enum:
+              - RECEIVED
+              - UNDER_TEST
+              - VERIFIED
+              - APPROVED
+              - INACTIVE
+              - REJECTED
+              - EXPIRED
+              - UNDER_TEST_SG
+              
+  FirmwareProperties:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          key:
+            type: string
+          value:
+            type: string
+                
+  Job:  
+    allOf:
+      - $ref: '#/definitions/PersistentObject'   
+      - properties:
+          name:
+            type: string            
+            description: unique job name
+          originator:
+           type: string            
+           description: principle who initiated the job
+          priority:
+           type: integer           
+           description: priority of the job
+          askUser:
+           type: boolean           
+           description:  confirmation message i.e pop to confirm  from the user
+          alertMessage:
+           type: string            
+           description: Message to be displayed as part of alert
+          retryCount:
+           type: integer            
+           description:  Number of retry count
+          targetedClient:
+            $ref: '#/definitions/Client'
+          version:
+           type: integer
+          expirationTimeOutSeconds:
+           type: integer            
+           description:  Operation time out
+          executionTimeOutSeconds:
+           type: integer           
+           description:  operation time out  after the device connects back
+          updateInventory:
+           type: boolean           
+           description:  update device inventory details
+          storeDJRParameters:
+           type: boolean             
+           description:  store result after the operation
+          primitiveRequest:
+           $ref: '#/definitions/PrimitiveRequest'
+           description:  primitive request details
+          action:
+             $ref: '#/definitions/Action' 
+          description:
+            type: string
+            description:   description about the job
+          nbiCorrelator:
+            type: string
+          uiMode:
+            type: string
+          protocolPreference:
+            type: string
+          sourceAddress:
+            type: string
+          delaySeconds:
+            type: integer
+          needNotification:
+            type: boolean
+          enabledNbiNotification:
+            type: boolean   
+
+  PolicyDetail:
+    properties:
+      policyName:
+        type: string
+      actionName:
+        type: string
+      primitive:
+        type: string
+      originator:
+        type: string
+      lastEnableDisableTime:
+        type: integer
+        format: int64
+      enable:
+        type: boolean
+      jobCorrelatorId:
+        type: string
+      id:
+        type: integer
+        format: int64
+                              
+  Schedule:
+    properties:
+      advanced:
+        type: boolean
+      startTime:
+        type: integer
+        format: int64
+      endTime:
+        type: integer
+        format: int64
+      cronSchedule:
+        $ref: '#/definitions/Cron'
+      content:
+        type: string
+        description:   description about the schedule
+      status:
+        type: string
+  
+  ManagementJobSettings:
+    allOf:
+      - $ref: '#/definitions/Job'
+      - properties:
+         jobExitTags:
+          type: array
+          items:
+           $ref: '#/definitions/ExitTag'
+         jobExitEvents:
+          type: array
+          items:
+           $ref: '#/definitions/ExitEvent'
+         criteriaParameter:
+            $ref: '#/definitions/CriteriaParamArray'
+         enable:
+          type: boolean
+         jobStatus:
+           type: string
+         criteriaTemplateId:
+            type: integer
+            format: int64      
+  BulkWindowLog:
+    properties:
+      startTime:
+        type: integer
+        format: int64
+      endTime:
+        type: integer
+        format: int64
+      targetedDevices:
+        type: integer
+        format: int64
+      windowLag:
+        type: integer
+        format: int64
+
+  PolicySettings:
+    allOf:
+      - $ref: '#/definitions/ManagementJobSettings'
+      - properties:
+          executionMode:
+            $ref: '#/definitions/ExecutionMode'
+          jobEvents:
+            type: array
+            items:
+              $ref: '#/definitions/JobEvent'
+          bulkWindowLog:
+            type: array
+            items:
+              $ref: '#/definitions/BulkWindowLog'
+                           
+  CampaignSettings: 
+    allOf:
+      - $ref: '#/definitions/ManagementJobSettings'
+      - properties:
+          maxTargetedDevices:
+            type: integer
+            format: int64
+            description: Max targeted devices allowed in a bulk job event.
+          rank:
+            type: integer
+            description: Rank / Priority of the job.
+          failureThreshold:
+            type: integer
+          enqueuingRate:
+            type: integer
+          excludeSuccessfulDevices:
+            type: boolean
+          bulkJobRuntime:
+            $ref: '#/definitions/BulkJobRuntime'
+          schedule:
+            $ref: '#/definitions/Schedule'
+          bulkWindowLog:
+            type: array
+            items:
+              $ref: '#/definitions/BulkWindowLog'
+              
+  BulkJobRuntime:
+    properties:
+      windowStatus:
+        type: string
+      windowTargetedDeviceCount:
+        type: integer
+        format: int64
+      nextTransitionJobStatus:
+        type: string
+      nextTransitionTime:
+        type: string
+      lastSeenMessage:
+        type: string
+      lastEnableDisableTime:
+        type: integer
+        format: int64
+      lastTargetedDevice:
+        type: integer
+        format: int64
+      runTargetedDeviceCount:
+        type: integer
+        format: int64
+      cacheUpdated:
+        type: string
+      cacheSize:
+        type: integer
+        format: int64
+      lagTimeMillis:
+        type: integer
+        format: int64
+      windowFailureCount:
+        type: integer
+
+  WindowLogs :
+    properties:
+      id:
+        type: integer
+        format: int64
+      window:
+        type: string
+  ExitTag:
+    properties:
+      exitTagName:
+        type: string
+      exitTagValue:
+        type: string
+      filterSubStatus:
+        type: string  
+      exitTagType:
+        type: string
+        enum:
+          - SUCCESS
+          - NO_RESPONSE
+          - FAILURE
+  ScheduleItem:
+    properties:
+      content:
+        type: string
+      start:
+        type: integer
+        format: int64
+      end:
+        type: integer
+        format: int64
+      targetedDevices:
+        type: integer
+        format: int64
+      maxTargetedDevices:
+        type: integer
+        format: int64
+  CampaignSchedule:
+    properties:
+      id:
+        type: string
+      content:
+        type: string
+      jobStatus:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/ScheduleItem'
+  ExitEvent:
+    properties:
+      exitEventName:
+        type: string
+      subStatus:
+        type: string
+      notify:
+        type: string
+      exitEventType:
+        type: string
+        enum:
+          - SUCCESS
+          - NO_RESPONSE
+          - FAILURE        
+          
+  ExecutionMode:
+    properties:
+      mode:
+        type: string
+        enum:
+          - REAL_TIME
+          - BEST_EFFORT
+  
+  JobEvent:
+    type: object
+    discriminator: eventType
+   
+  AlertJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          alertType:
+            type: string
+          alertData:
+            type: string
+          
+  BootstrapedJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          nativeclient:
+            type: boolean
+  
+  CustomJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          name:
+            type: string
+       
+  HeartBeatJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          name:
+            type: string
+        
+  ServiceChangeJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          serviceTagName:
+            type: string
+          serviceTagValue:
+            type: string
+       
+  SMSJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          message:
+            type: string
+  
+  ValueChangeJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          expression:
+            type: string
+        
+  HssNotificationJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          name:
+            type: string
+       
+  InUseJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          name:
+            type: string
+    
+  RegisteredJobEvent:
+    allOf:
+      - $ref: '#/definitions/JobEvent'
+      - properties:
+          name:
+            type: string
+                                  
+  PrimitiveRequest:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    required:
+      - name
+
+  PrimitiveMetaData:
+    properties:
+      label:
+        type: string
+      type:
+        type: string
+        description: 'type of the data. One of [string,int,boolean,object,array]. Some properties are only applicable for certain types'
+      default:
+        type: string
+        description: 'applicable for simple types: default value'
+      items:
+        $ref: '#/definitions/PrimitiveMetaData'
+        description: 'required for array types: Type of the items'
+      maxItems:
+        type: integer
+        description: 'applicable for array types: Maximum amount of items'
+      enum:
+        type: array
+        description: 'applicable for simple types: list of allowed values'
+        items:
+          type: string
+      required:
+        type: boolean
+      properties:
+          type: object
+          description: 'required for object types'
+          additionalProperties:
+            $ref: '#/definitions/PrimitiveMetaData'
+      oneOf:
+          type: array
+          description: 'if specified, one the child types will be used. Mutualy exclusive with type property'
+          items:
+            $ref: '#/definitions/PrimitiveMetaData'
+
+  Action:
+    allOf:
+      - $ref: '#/definitions/PersistentObject'
+      - properties:
+          name:
+            type: string
+          description:
+            type: string
+          primitiveRequest:
+            $ref: '#/definitions/PrimitiveRequest'
+          inUse:
+            type: boolean
+          unResolvedDynamicVariable:
+            type: array
+            items:
+              $ref: '#/definitions/JobParam'
+    required:
+      - name
+      - primitiveRequest
+
+  SingleDeviceJob:
+    allOf:
+      - $ref: '#/definitions/Job'
+      - properties:
+          primitiveRequest:
+            $ref: '#/definitions/PrimitiveRequest'
+          actionId:
+            type: integer
+            format: int64
+          jobParam:
+            type: array
+            items:
+              $ref: '#/definitions/JobParam'
+
+  JobParam:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    required:
+      - name
+  Cron:
+    properties:
+      enableCronExpression:
+        type: string
+      suspendCronExpression:
+        type: string
+      executeImmediate:
+        type: boolean
+  Paged:
+    properties:
+      iTotalRecords:
+        type: integer
+        format: int64
+      iTotalDisplayRecords:
+        type: integer
+        format: int64
+
+  DeviceBrand:
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+
+  DeviceModel:
+    properties:
+      name:
+        type: string
+  Error:
+    properties:
+      code:
+        type: string
+      localizedMessage:
+        type: string
+  Script:
+    properties:
+      name:
+        type: string
+      content:
+        type: string
+      schema:
+        type: string
+
+  CampaignStatisticListItem:
+    properties:
+      id:
+        type: string
+      jobCorrelatorId:
+        type: string
+      content:
+        type: string
+      jobStatus:
+        type: string
+
+  CampaignStatistics:
+    properties:
+      id:
+        type: string
+      jobCorrelatorId:
+        type: string
+      content:
+        type: string
+      jobStatus:
+        type: string
+      criteriaTemplateName:
+        type: string
+      actionName:
+        type: string
+      actionPrimitiveName:
+        type: string
+      schedule:
+         $ref: '#/definitions/Schedule'
+      jobStats:
+        type: array
+        items:
+          $ref: '#/definitions/JobStats'                       
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Schedule' 
+
+  ShortDeviceInfo:
+    properties:
+      deviceId:
+        type: string
+      manufacturer:
+        type: string
+      model:
+        type: string
+      inUse:
+        type: boolean
+      managed:
+        type: boolean
+      networkId:
+        type: string
+      subscriberId:
+        type: string
+      customerId:
+        type: string
+        
+  eUICCDownloadParams:
+     properties:
+            eid:
+              type: string
+              description: Registered e-UICC Id
+            smsrId:
+              type: string
+              description: Identification of the SM-SR currently in charge of eUICC management.
+            profileType:
+              type: string
+              description: Identification of the Profile type to download and install in the eUICC.
+            enableProfile:
+              type: boolean
+              description: Indicates if the Profile shall be enabled after downloading and installation.
+            iccid:
+              type: string
+              description: Unique number to identify a Profile in an eUICC
+
+  JobStats:  
+    properties:    
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Data'   
+       
+  Data:        
+    properties:
+      name:
+        type: string
+      y:
+        type: integer
+  
+  HostDevice:
+    properties:
+      manufacturer:
+       type: string
+      model:
+       type: string
+      softwareVersion:
+       type: string
+      firmwareVersion:
+       type: string
+      hardwareVersion:
+       type: string
+      date:
+       type: string
+      hostDeviceId:
+       type: string      
+     
+ 
+  ChainedJobViewModel:
+    properties:
+      root:
+        $ref: '#/definitions/CanonicalJobNode'
+                  
+  CanonicalJobNode:
+    properties:
+      jobId:
+        type: integer
+        format: int64
+        readOnly: true
+        description: Unique identifier
+      jobName:
+        type: string
+      jobStatus:
+        type: string
+      jobType:
+        type: string
+      jobCorrelatorId:
+        type: string
+      serviceTagName:
+        type: string
+      serviceTagValue:
+        type: string
+      customEventName:
+        type: string
+      exitTags:
+        $ref: '#/definitions/JobNodeExitType'
+      exitEvents:
+        $ref: '#/definitions/JobNodeExitType'
+
+  JobNodeExitType:
+    properties:
+     success:
+        type: array
+        items:
+          $ref: '#/definitions/CanonicalJobNode'
+     failure:
+        type: array
+        items:
+          $ref: '#/definitions/CanonicalJobNode'
+     noresponse:
+        type: array
+        items:
+          $ref: '#/definitions/CanonicalJobNode'
+
+   
+  ScriptDetailExample:
+    properties:
+      name:
+        description: content
+        type: string
+      content:
+        type: string
+      schema:
+        type: string
+      defaultContent:
+        type: string
+      defaultSchema:
+        type: string
+      defaultNativePrimitive:
+        type: string
+    required:
+      - name
+      - schema
+parameters:
+  objectid:
+    name: id
+    in: path
+    description: "An object's unique id in the system"
+    required: true
+    type: integer
+    format: int64
+  keyParam:
+    name: key
+    in: path
+    description: SCE key
+    required: true
+    type: string
+  iDisplayLength:
+    name: iDisplayLength
+    in: query
+    description: 'Amount of records to return. If not provided, server decides. Possible option -1 to fetch ALL records'
+    type: integer
+    required: false
+    format: int32
+  iDisplayStart:
+    name: iDisplayStart
+    in: query
+    description: 'Start index for paging. If not provided, page will start at beginning of the list (index 0)'
+    type: integer
+    required: false
+    format: int32a
+  includeJobDetails:
+    name: includeJobDetails
+    in: query
+    description: 'Include Device Job Result request/response data into the job history list'
+    type: boolean
+    required: false
+  name:
+    name: name
+    in: path
+    required: true
+    type: string
+  eid:
+    name: eid
+    in: path
+    description: "eUICC id, represented as 32 digits"
+    required: true
+    type: string
